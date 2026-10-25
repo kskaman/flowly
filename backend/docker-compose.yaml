@@ -1,0 +1,67 @@
+services:
+  cache:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: pgvector/pgvector:pg15
+    container_name: flowly-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5438:5432"
+    volumes:
+      - flowly-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: flowly-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowly-api
+    entrypoint: ["./docker-entrypoint.sh"]
+    command: node ./src/index.js
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      NODE_ENV: development
+      PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      cache:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
+volumes:
+  flowly-postgres-data:
+  redis-data:

@@ -1,0 +1,175 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * ----------------------  ENUMS  -------------------
+ */
+enum Font {
+  public_sans
+  noto_serif
+  source_code
+}
+
+enum Currency {
+  us_dollar
+  cad_dollar
+  euro
+  indian_rupees
+  british_pound_sterling
+  australian_dollar
+  chinese_yuan
+}
+
+enum CategoryType {
+  standard
+  custom
+}
+
+/**
+ * ----------------------  MODELS  --------------------
+ */
+model User {
+  id                      String    @id @default(uuid())
+  name                    String?
+  email                   String    @unique
+  password                String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  isVerified              Boolean   @default(false)
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+
+  /**
+   * 1‑to‑1
+   */
+  settings     Settings?
+  balance      Balance?
+
+  /**
+   * 1‑to‑many
+   */
+  transactions   Transaction[]
+  budgets        Budget[]
+  pots           Pot[]
+  recurringBills RecurringBill[]
+  
+  
+  categoriesCreated CategoryDefinition[] @relation("CreatorCategories")
+}
+
+/**
+ * ------------- Settings (1‑to‑1) -------------
+ */
+model Settings {
+  id       String   @id @default(uuid())
+  userId   String   @unique
+  font     Font
+  currency Currency
+  pots     Boolean
+  bills    Boolean
+  budgets  Boolean
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+/**
+ * ------------- Balance (1‑to‑1) -------------
+ */
+model Balance {
+  id       String @id @default(uuid())
+  userId   String @unique
+  current  Float
+  income   Float
+  expenses Float
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+
+
+/**
+ * ------------- Master list of categories -------------
+ */
+model CategoryDefinition {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  type      CategoryType
+  creatorId String? // null ⟶ standard
+
+  // reverse relation to the creator
+  creator User? @relation(fields: [creatorId], references: [id], name: "CreatorCategories")
+
+  // reverse edges
+  transactions   Transaction[]
+  budgets        Budget[]
+  recurringBills RecurringBill[]
+}
+
+/**
+ * ------------- Transaction, Budget, Bill now reference UserCategory via FK -------------
+ */
+model Transaction {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryDefinitionId String
+  category       CategoryDefinition @relation(fields: [categoryDefinitionId], references: [id])
+
+  avatar      String?
+  name        String
+  date        DateTime
+  theme       String
+  amount      Float
+  recurring   Boolean
+  recurringId String?
+}
+
+model Budget {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryDefinitionId String
+  category       CategoryDefinition @relation(fields: [categoryDefinitionId], references: [id])
+
+  maximum Float
+  theme   String
+}
+
+model Pot {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  name   String
+  target Float
+  total  Float
+  theme  String
+
+  @@unique([userId, name])
+}
+
+model RecurringBill {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryDefinitionId String?
+  category       CategoryDefinition? @relation(fields: [categoryDefinitionId], references: [id])
+
+  name     String
+  amount   Float
+  lastPaid DateTime?
+  dueDate  String
+  theme    String
+}
