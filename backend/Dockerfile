@@ -12,8 +12,8 @@ RUN apt-get update -y && \
 # Copy in your package files first
 COPY package*.json ./
 
-# Install dependencies 
-RUN npm ci --omit=dev
+# Install all dependencies (dev ones are needed for the build and the Prisma CLI)
+RUN npm ci
 
 # Copy in your Prisma schema so we can generate
 COPY prisma ./prisma
@@ -23,6 +23,9 @@ RUN npx prisma generate
 
 # Now copy the rest of your code
 COPY . .
+
+# Compile TypeScript to dist/
+RUN npm run build
 
 # Expose the port
 EXPOSE 3000
@@ -37,4 +40,4 @@ ENV NODE_ENV=development
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # Start the app
-CMD ["node", "./src/index.js"]
+CMD ["node", "./dist/index.js"]

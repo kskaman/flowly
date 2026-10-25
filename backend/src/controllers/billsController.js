@@ -193,7 +193,7 @@ export const deleteBill = async (req, res) => {
     });
 
     return res.status(204).json({ message: "Deleted" });
-  } catch (err) {
+  } catch {
     return res.status(500).json({ message: "Server error" });
   }
 };

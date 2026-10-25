@@ -45,8 +45,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: flowly-api
+    restart: on-failure
     entrypoint: ["./docker-entrypoint.sh"]
-    command: node ./src/index.js
+    command: node ./dist/index.js
     env_file:
       - .env
     environment:

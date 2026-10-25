@@ -1,5 +1,4 @@
 import prisma from "../prismaClient.js";
-import { v4 as uuid } from "uuid";
 
 const txSelect = {
   id: true,

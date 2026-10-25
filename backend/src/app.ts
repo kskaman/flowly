@@ -25,7 +25,7 @@ app.use(morgan("dev"));
 app.use("/api", router);
 
 // Backend Status check
-app.get("/api/status", (req, res) => {
+app.get("/api/status", (_req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),

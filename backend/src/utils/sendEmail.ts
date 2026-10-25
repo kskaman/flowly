@@ -12,7 +12,13 @@ const transporter = nodemailer.createTransport({
     : undefined,
 });
 
-export async function sendEmail({ to, subject, html }) {
+interface SendEmailParams {
+  to: string;
+  subject: string;
+  html: string;
+}
+
+export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
     const info = await transporter.sendMail({
       from: `"Flowly" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,

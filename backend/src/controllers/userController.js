@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import prisma from "../prismaClient.js";
 import redis from "../redisClient.js";
 
