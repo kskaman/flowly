@@ -1,4 +1,4 @@
-# Use an official node.js runtime as a parent image
+# Build context is the repo root (see docker-compose.yaml) so the shared workspace package is available.
 FROM node:22-slim
 
 WORKDIR /app
@@ -9,20 +9,21 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy in your package files first
-COPY package*.json ./
+# Copy workspace manifests first so the dependency layer is cached
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/
+COPY packages/shared/package.json packages/shared/
 
-# Install all dependencies (dev ones are needed for the build and the Prisma CLI)
-RUN npm ci
+# Install backend + shared dependencies (dev ones are needed for the build and the Prisma CLI)
+RUN npm ci -w backend -w @flowly/shared
 
-# Copy in your Prisma schema so we can generate
-COPY prisma ./prisma
+COPY packages/shared packages/shared
+COPY backend backend
+
+WORKDIR /app/backend
 
 # Generate the Prisma client inside the container
 RUN npx prisma generate
-
-# Now copy the rest of your code
-COPY . .
 
 # Compile TypeScript to dist/
 RUN npm run build
@@ -30,8 +31,6 @@ RUN npm run build
 # Expose the port
 EXPOSE 3000
 
-# make docker-entrypoint.sh executable
-COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
 

@@ -1,9 +1,10 @@
 import { createClient } from "redis";
+import { config } from "./config/index.js";
 
 const MAX_RETRIES = 7;
 
 const client = createClient({
-  url: process.env.REDIS_URL, // e.g. redis://cache:6379
+  url: config.redisUrl,
   socket: {
     connectTimeout: 10000,
     // Exit instead of retrying forever so Docker/ECS can restart the container.

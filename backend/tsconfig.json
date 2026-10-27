@@ -18,5 +18,5 @@
     "checkJs": false,
     "noEmit": true
   },
-  "include": ["src", "tsup.config.ts", "vitest.config.ts"]
+  "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts", "drizzle.config.ts"]
 }

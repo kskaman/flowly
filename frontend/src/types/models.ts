@@ -8,11 +8,6 @@ export enum Font {
   export enum Currency {
     us_dollar = "$",
     cad_dollar = "C$",
-    euro = "€",
-    indian_rupees = "₹",
-    british_pound_sterling = "£",
-    australian_dollar = "A$",
-    chinese_yuan = "¥",
   }
   
   export enum CategoryType {

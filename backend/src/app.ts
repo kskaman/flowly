@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import router from "./routes/index.js";
+import { config } from "./config/index.js";
 
 const app = express();
 
@@ -11,7 +12,7 @@ app.use(cookieParser());
 // Enable CORS for requests from frontend
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: config.frontendUrl,
     credentials: true, // allow cookies to be sent from frontend
   })
 );
@@ -29,7 +30,7 @@ app.get("/api/status", (_req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
+    environment: config.nodeEnv,
   });
 });
 

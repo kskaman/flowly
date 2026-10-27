@@ -8,4 +8,6 @@ export default defineConfig({
   outDir: "dist",
   clean: true,
   sourcemap: true,
+  // The shared package ships TypeScript source, so it must be bundled.
+  noExternal: ["@flowly/shared"],
 });

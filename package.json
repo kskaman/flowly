@@ -1,0 +1,8 @@
+{
+  "name": "flowly",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "packages/shared"
+  ]
+}
